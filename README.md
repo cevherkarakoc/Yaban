@@ -1,1 +1,1 @@
-[Demo](https://cevherkarakoc.github.io/Yaban).
+[Demo](https://cevherkarakoc.github.io/Yaban/demo.html).
