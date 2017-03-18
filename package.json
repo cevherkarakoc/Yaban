@@ -1,0 +1,27 @@
+{
+  "name": "yaban",
+  "version": "0.0.1",
+  "description": "Procedural island generation",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cevherkarakoc/Yaban.git"
+  },
+  "dependencies": {
+    "p5": "^0.5.7"
+  },
+  "keywords": [
+    "island",
+    "map",
+    "procedural"
+  ],
+  "author": "cevherkarakoc",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cevherkarakoc/Yaban/issues"
+  },
+  "homepage": "https://github.com/cevherkarakoc/Yaban#readme"
+}
