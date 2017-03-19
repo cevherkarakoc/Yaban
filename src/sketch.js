@@ -31,15 +31,13 @@ const sketch = (p) => {
     p.noStroke();
     p.colorMode(p.HSB);
 
-    p.noiseSeed(3678);
-    
-    p.noiseDetail(16,0.5);
-
     mapSize = p.width;
     genMapArray = [];
     genMap = p.createImage(mapSize, mapSize);
     shadowBlend = p.createImage(mapSize, mapSize);
     
+    controller.seed = 3678;
+    p.noiseSeed(controller.seed);
     generateMap();
 
     createController(p,controller,generateMap);
