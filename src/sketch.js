@@ -1,4 +1,7 @@
 import P5 from "p5";
+import {Ocean, Water, Beach,
+        Snow, Grass, Stone, Desert,
+        TropicalForest, TaigaForest } from "./biomes";
 
 const sketch = (p) => {
 
@@ -19,7 +22,10 @@ const sketch = (p) => {
     p.createCanvas(600,600);-
     p.noStroke();
     p.colorMode(p.HSB);
-    //p.noiseSeed(5);
+
+    //p.noiseSeed(3678);
+    p.noiseSeed(3);
+    
     p.noiseDetail(16,0.5);
 
     mapSize = p.width;
@@ -38,11 +44,16 @@ const sketch = (p) => {
   }
 
   function generateMap() {
+    //map
     for (var x = 0; x < mapSize; x+=sc) {
       genMapArray[x] = [];
       for (var y = 0; y < mapSize; y+=sc) {
 
+        p.noiseDetail(16,0.5);
         var n = p.noise((freq * x)+offsetX, (freq * y)+offsetY);
+
+        p.noiseDetail(6,0.55);
+        var moisture = p.noise((freq * x)+1000, (freq * y)+1000);
         
         //RADIAL GRADIANT
         var val = p.sqrt(p.pow((mapSize/2 - x),2) + p.pow(mapSize/2 - y,2) );
@@ -52,71 +63,66 @@ const sketch = (p) => {
 
         n = n * val;
         
-        var c = 250;
-        if (n > 0.08 ) c = 200;
-        if (n > 0.12 ) c = 55;
-        if (n > 0.15 ) c = 140;
-        if (n > 0.25 ) c = 110;
-        if (n > 0.35 ) c = 25;
-        if (n > 0.50 ) c = 15;
-        if (n > 0.60 ) c = 0;
-      
+        var zone;
+        
+        if (n > 0.55 ){
+          if(moisture<0.5) zone = new Stone(n);
+          else zone = new Snow(n);
+        }
+
+        else if (n > 0.40 ) {
+          if(moisture<=0.25) zone = new Desert(n);
+          else if (moisture<0.50) zone = new Stone(n);
+          else zone = new TaigaForest(n);
+        }
+
+        else if (n > 0.20 ){
+          if(moisture<=0.25) zone = new Desert(n);
+          else if (moisture<0.50) zone = new Grass(n);
+          else zone = new TropicalForest(n);
+        }
+
+        else if (n > 0.15 ) {
+          if(moisture<=0.25) zone = new Desert(n);
+          else if (moisture<0.75) zone = new Grass(n);
+          else zone = new TropicalForest(n);
+        }
+        else if (n > 0.12 ) zone = new Beach(n);
+        else if (n > 0.08 ) zone = new Water();
+        else zone = new Ocean;        
+ 
         //genMap.set(x,y,color(0,0,val*100));       
 
-        genMapArray[x][y] = n;
-        genMap.set(x,y,p.color(c,100,100));
+        genMapArray[x][y] = zone;
+        var c = zone.color;
+
+        genMap.set(x, y, p.color(c.H,c.S,c.B));
       }		
     }
 
-    for(var i = 0; i< mapSize; i+=sc){
-      var prevH = 0;
-      var step = 0;
-      for (var x = 0; x < mapSize; x+=sc) {
-        var y = x+i;
-        var c = genMapArray[x][y];
-        if(c < 0.25) c = 0;
+    //shadow
+    for (var x = 0; x < mapSize; x+=sc) {
+      for (var y = 0; y < mapSize; y+=sc) {
+        var c = genMapArray[x][y].height;
         var newC = p.color(0,0,100);
-        if(c>prevH){
-          prevH = c;
-        }else if(c<prevH && step<3){
-          newC = p.color(0,0,90);
-          step++;
-        }
-        if(step>=3){
-          step = 0;
-          prevH = 0;
+
+        if(c<0.14) c = 0;
+        for(var i=0;i<2 && x>0 && y>0;i++){
+          var pre = genMapArray[x-i][y-i].height;
+          if(pre<0.14) pre = 0;          
+          if(pre>c){
+            newC = p.color(0,0,94-p.floor(pre));
+            break;
+          }
         }
 
         shadowBlend.set(x,y,newC);
-      }  
-    }
-
-    for(var i = 1; i<mapSize ; i+=sc){
-      var prevH = 0;
-      var step = 0;
-      for (var x = 0; x < mapSize; x+=sc) {
-        var y = x - i;
-        
-        var c = genMapArray[x][y];
-        if(c < 0.25) c = 0;
-        var newC = p.color(0,0,100);
-        if(c>prevH){
-          prevH = c;
-        }else if(c<prevH && step<3){
-          newC = p.color(0,0,90);
-          step++;
-        }
-        if(step>=3){
-          step = 0;
-          prevH = 0;
-        }
-
-        shadowBlend.set(x,y,newC);
-      }  
+      }
     }
     
     genMap.updatePixels();  
     shadowBlend.updatePixels();
+    shadowBlend.filter(p.BLUR,1);    
   }
 
   // INPUT EVENT
