@@ -1,5 +1,7 @@
 import P5 from "p5";
 import P5Dom from "p5/lib/addons/p5.dom";
+
+import makeBiome from "./biomeMaker";
 import createController from "./controller";
 
 const sketch = (p) => {
@@ -28,7 +30,9 @@ const sketch = (p) => {
     p.createCanvas(600,600);-
     p.noStroke();
     p.colorMode(p.HSB);
-    //p.noiseSeed(5);
+
+    p.noiseSeed(3678);
+    
     p.noiseDetail(16,0.5);
 
     mapSize = p.width;
@@ -52,89 +56,54 @@ const sketch = (p) => {
   }
 
   function generateMap() {
+    //map
     for (var x = 0; x < mapSize; x+=sc) {
       genMapArray[x] = [];
       for (var y = 0; y < mapSize; y+=sc) {
 
-        var n = p.noise( (freq * (x-(controller.xSymmetry * mapSize/2))) , (freq * (y-(controller.ySymmetry * mapSize/2))) );
-        
-        //RADIAL GRADIANT
-        var val = p.sqrt(p.pow((mapSize/2 - x),2) + p.pow(mapSize/2 - y,2) );
-        val = p.map(val,0,mapSize/2 ,1,0);
-        val *= 1;
-        //
+        p.noiseDetail(16,0.5);
+        var height = p.noise( (freq * (x-(controller.xSymmetry * mapSize/2))) , (freq * (y-(controller.ySymmetry * mapSize/2))) );
 
-        n = n * val;
-        
-        var c = 250;
-        if (n > 0.08 ) c = 200;
-        if (n > 0.12 ) c = 55;
-        if (n > 0.15 ) c = 140;
-        if (n > 0.25 ) c = 110;
-        if (n > 0.35 ) c = 25;
-        if (n > 0.50 ) c = 15;
-        if (n > 0.60 ) c = 0;
-      
-        //genMap.set(x,y,color(0,0,val*100));       
+        p.noiseDetail(6,0.55);
+        var moisture = p.noise((freq * x)+1000, (freq * y)+1000);
 
-        genMapArray[x][y] = n;
-        genMap.set(x,y,p.color(c,100,100));
+        var val = radialGradient(x,y,mapSize,mapSize);
+        height = height * val;
+        
+        var zone = makeBiome(height,moisture);     
+
+        genMapArray[x][y] = zone;
+
+        var c = zone.color;
+        genMap.set(x, y, p.color(c.H,c.S,c.B));
       }		
     }
 
-    for(var i = 0; i< mapSize; i+=sc){
-      var prevH = 0;
-      var step = 0;
-      for (var x = 0; x < mapSize; x+=sc) {
-        var y = x+i;
-        var c = genMapArray[x][y];
-        if(c < 0.25) c = 0;
+    //shadow
+    for (var x = 0; x < mapSize; x+=sc) {
+      for (var y = 0; y < mapSize; y+=sc) {
+        var c = genMapArray[x][y].height;
         var newC = p.color(0,0,100);
-        if(c>prevH){
-          prevH = c;
-        }else if(c<prevH && step<3){
-          newC = p.color(0,0,90);
-          step++;
-        }
-        if(step>=3){
-          step = 0;
-          prevH = 0;
+
+        if(c<0.14) c = 0;
+        for(var i=0;i<2 && x>0 && y>0;i++){
+          var pre = genMapArray[x-i][y-i].height;
+          if(pre<0.14) pre = 0;          
+          if(pre>c){
+            newC = p.color(0,0,94-p.floor(pre));
+            break;
+          }
         }
 
         shadowBlend.set(x,y,newC);
-      }  
-    }
-
-    for(var i = 1; i<mapSize ; i+=sc){
-      var prevH = 0;
-      var step = 0;
-      for (var x = 0; x < mapSize; x+=sc) {
-        var y = x - i;
-        
-        var c = genMapArray[x][y];
-        if(c < 0.25) c = 0;
-        var newC = p.color(0,0,100);
-        if(c>prevH){
-          prevH = c;
-        }else if(c<prevH && step<3){
-          newC = p.color(0,0,90);
-          step++;
-        }
-        if(step>=3){
-          step = 0;
-          prevH = 0;
-        }
-
-        shadowBlend.set(x,y,newC);
-      }  
+      }
     }
     
     genMap.updatePixels();  
     shadowBlend.updatePixels();
+    shadowBlend.filter(p.BLUR,1);    
   }
 
-  // INPUT EVENT
-  
   p.keyPressed = () => {
     if(p.keyCode === 37) deltaX = 1;
     else if(p.keyCode === 39) deltaX = -1;
@@ -147,6 +116,14 @@ const sketch = (p) => {
     if(p.keyCode === 37 || p.keyCode === 39) deltaX = 0;
 
     if(p.keyCode === 38 || p.keyCode === 40) deltaY = 0;
+  }
+
+  //Helper Functions
+  const radialGradient = (x,y,w,h) => {
+    var val = p.sqrt(p.pow((w/2 - x),2) + p.pow(h/2 - y,2) );
+    val = p.map(val,0,w/2 ,1,0);
+    
+    return val;
   }
 }
 
