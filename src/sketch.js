@@ -20,26 +20,26 @@ const sketch = (p) => {
   var shadowBlend;
 
   var controller = {
-    seed      : p.floor(p.random(4095)),
-    xSymmetry : false,
-    ySymmetry : false,
-    shadow    : true  
+    seed        : p.floor(p.random(4095)),
+    xSymmetry   : false,
+    ySymmetry   : false,
+    heightFac   : 1.0,
+    moistureFac : 1.0,
+    shadow      : true,
   }
 
   p.setup = () => {
-    p.createCanvas(600,600);-
+    p.createCanvas(600,600);
     p.noStroke();
     p.colorMode(p.HSB);
-
-    p.noiseSeed(3678);
-    
-    p.noiseDetail(16,0.5);
 
     mapSize = p.width;
     genMapArray = [];
     genMap = p.createImage(mapSize, mapSize);
     shadowBlend = p.createImage(mapSize, mapSize);
     
+    controller.seed = 3678;
+    p.noiseSeed(controller.seed); 
     generateMap();
 
     createController(p,controller,generateMap);
@@ -48,6 +48,7 @@ const sketch = (p) => {
   p.draw = () => {
     offsetX+=deltaX*3;
     offsetY+=deltaY*3;
+
     p.image(genMap,offsetX,offsetY);
     //p.image(shadowBlend,offsetX,offsetY);
     if(controller.shadow){
@@ -70,8 +71,10 @@ const sketch = (p) => {
         var val = radialGradient(x,y,mapSize,mapSize);
         height = height * val;
         
+        if(controller.heightFac<1 || height>0.10) height *= controller.heightFac;
+        moisture *= controller.moistureFac;
+        
         var zone = makeBiome(height,moisture);     
-
         genMapArray[x][y] = zone;
 
         var c = zone.color;
@@ -122,7 +125,6 @@ const sketch = (p) => {
   const radialGradient = (x,y,w,h) => {
     var val = p.sqrt(p.pow((w/2 - x),2) + p.pow(h/2 - y,2) );
     val = p.map(val,0,w/2 ,1,0);
-    
     return val;
   }
 }
