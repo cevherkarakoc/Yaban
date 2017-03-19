@@ -1,5 +1,8 @@
 import P5 from "p5";
+import P5Dom from "p5/lib/addons/p5.dom";
+
 import makeBiome from "./biomeMaker";
+import createController from "./controller";
 
 const sketch = (p) => {
 
@@ -16,6 +19,13 @@ const sketch = (p) => {
   var mapSize;
   var shadowBlend;
 
+  var controller = {
+    seed      : p.floor(p.random(4095)),
+    xSymmetry : false,
+    ySymmetry : false,
+    shadow    : true  
+  }
+
   p.setup = () => {
     p.createCanvas(600,600);-
     p.noStroke();
@@ -29,7 +39,10 @@ const sketch = (p) => {
     genMapArray = [];
     genMap = p.createImage(mapSize, mapSize);
     shadowBlend = p.createImage(mapSize, mapSize);
-    generateMap();  
+    
+    generateMap();
+
+    createController(p,controller,generateMap);
   }
 
   p.draw = () => {
@@ -37,7 +50,9 @@ const sketch = (p) => {
     offsetY+=deltaY*3;
     p.image(genMap,offsetX,offsetY);
     //p.image(shadowBlend,offsetX,offsetY);
-    p.blend(shadowBlend, 0, 0, mapSize, mapSize, offsetX, offsetY, mapSize, mapSize, p.MULTIPLY)
+    if(controller.shadow){
+      p.blend(shadowBlend, 0, 0, mapSize, mapSize, offsetX, offsetY, mapSize, mapSize, p.MULTIPLY);      
+    }
   }
 
   function generateMap() {
@@ -47,7 +62,7 @@ const sketch = (p) => {
       for (var y = 0; y < mapSize; y+=sc) {
 
         p.noiseDetail(16,0.5);
-        var height = p.noise((freq * x)+offsetX, (freq * y)+offsetY);
+        var height = p.noise( (freq * (x-(controller.xSymmetry * mapSize/2))) , (freq * (y-(controller.ySymmetry * mapSize/2))) );
 
         p.noiseDetail(6,0.55);
         var moisture = p.noise((freq * x)+1000, (freq * y)+1000);
@@ -87,12 +102,6 @@ const sketch = (p) => {
     genMap.updatePixels();  
     shadowBlend.updatePixels();
     shadowBlend.filter(p.BLUR,1);    
-  }
-
-  // Input Event
-  p.mouseClicked = () => {
-    p.noiseSeed(p.random(100));
-    generateMap();
   }
 
   p.keyPressed = () => {
