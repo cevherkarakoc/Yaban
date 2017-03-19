@@ -1,7 +1,7 @@
 import P5 from "p5";
 import P5Dom from "p5/lib/addons/p5.dom";
 
-import makeBiome from "./biomeMaker";
+import makeBiome from "./makeBiome";
 import createController from "./controller";
 
 const sketch = (p) => {
