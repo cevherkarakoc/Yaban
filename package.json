@@ -4,7 +4,7 @@
   "description": "Procedural island generation",
   "main": "index.js",
   "scripts": {
-    "start": "webpack-dev-server",
+    "dev": "webpack-dev-server",
     "build": "webpack"
   },
   "repository": {
