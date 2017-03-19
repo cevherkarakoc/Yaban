@@ -1,7 +1,5 @@
 import P5 from "p5";
-import {Ocean, Water, Beach,
-        Snow, Grass, Stone, Desert,
-        TropicalForest, TaigaForest } from "./biomes";
+import makeBiome from "./biomeMaker";
 
 const sketch = (p) => {
 
@@ -23,8 +21,7 @@ const sketch = (p) => {
     p.noStroke();
     p.colorMode(p.HSB);
 
-    //p.noiseSeed(3678);
-    p.noiseSeed(3);
+    p.noiseSeed(3678);
     
     p.noiseDetail(16,0.5);
 
@@ -50,52 +47,19 @@ const sketch = (p) => {
       for (var y = 0; y < mapSize; y+=sc) {
 
         p.noiseDetail(16,0.5);
-        var n = p.noise((freq * x)+offsetX, (freq * y)+offsetY);
+        var height = p.noise((freq * x)+offsetX, (freq * y)+offsetY);
 
         p.noiseDetail(6,0.55);
         var moisture = p.noise((freq * x)+1000, (freq * y)+1000);
+
+        var val = radialGradient(x,y,mapSize,mapSize);
+        height = height * val;
         
-        //RADIAL GRADIANT
-        var val = p.sqrt(p.pow((mapSize/2 - x),2) + p.pow(mapSize/2 - y,2) );
-        val = p.map(val,0,mapSize/2 ,1,0);
-        val *= 1;
-        //
-
-        n = n * val;
-        
-        var zone;
-        
-        if (n > 0.55 ){
-          if(moisture<0.5) zone = new Stone(n);
-          else zone = new Snow(n);
-        }
-
-        else if (n > 0.40 ) {
-          if(moisture<=0.25) zone = new Desert(n);
-          else if (moisture<0.50) zone = new Stone(n);
-          else zone = new TaigaForest(n);
-        }
-
-        else if (n > 0.20 ){
-          if(moisture<=0.25) zone = new Desert(n);
-          else if (moisture<0.50) zone = new Grass(n);
-          else zone = new TropicalForest(n);
-        }
-
-        else if (n > 0.15 ) {
-          if(moisture<=0.25) zone = new Desert(n);
-          else if (moisture<0.75) zone = new Grass(n);
-          else zone = new TropicalForest(n);
-        }
-        else if (n > 0.12 ) zone = new Beach(n);
-        else if (n > 0.08 ) zone = new Water();
-        else zone = new Ocean;        
- 
-        //genMap.set(x,y,color(0,0,val*100));       
+        var zone = makeBiome(height,moisture);     
 
         genMapArray[x][y] = zone;
-        var c = zone.color;
 
+        var c = zone.color;
         genMap.set(x, y, p.color(c.H,c.S,c.B));
       }		
     }
@@ -125,8 +89,7 @@ const sketch = (p) => {
     shadowBlend.filter(p.BLUR,1);    
   }
 
-  // INPUT EVENT
-  
+  // Input Event
   p.mouseClicked = () => {
     p.noiseSeed(p.random(100));
     generateMap();
@@ -144,6 +107,14 @@ const sketch = (p) => {
     if(p.keyCode === 37 || p.keyCode === 39) deltaX = 0;
 
     if(p.keyCode === 38 || p.keyCode === 40) deltaY = 0;
+  }
+
+  //Helper Functions
+  const radialGradient = (x,y,w,h) => {
+    var val = p.sqrt(p.pow((w/2 - x),2) + p.pow(h/2 - y,2) );
+    val = p.map(val,0,w/2 ,1,0);
+    
+    return val;
   }
 }
 
