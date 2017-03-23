@@ -2,7 +2,7 @@ import P5 from "p5";
 import P5Dom from "p5/lib/addons/p5.dom";
 
 import makeBiome from "./makeBiome";
-import createController from "./controller";
+import Controller from "./controller";
 
 const sketch = (p) => {
 
@@ -19,14 +19,7 @@ const sketch = (p) => {
   var mapSize;
   var shadowBlend;
 
-  var controller = {
-    seed        : p.floor(p.random(4095)),
-    xSymmetry   : false,
-    ySymmetry   : false,
-    heightFac   : 1.0,
-    moistureFac : 1.0,
-    shadow      : true,
-  }
+  var controller;
 
   p.setup = () => {
     p.createCanvas(600,600);
@@ -37,12 +30,11 @@ const sketch = (p) => {
     genMapArray = [];
     genMap = p.createImage(mapSize, mapSize);
     shadowBlend = p.createImage(mapSize, mapSize);
-    
-    controller.seed = 3678;
-    p.noiseSeed(controller.seed); 
-    generateMap();
+    controller = new Controller(p,generateMap);
 
-    createController(p,controller,generateMap);
+    controller.base.seed = 3678;
+    p.noiseSeed(controller.base.seed); 
+    generateMap();
   }
 
   p.draw = () => {
@@ -51,7 +43,7 @@ const sketch = (p) => {
 
     p.image(genMap,offsetX,offsetY);
     //p.image(shadowBlend,offsetX,offsetY);
-    if(controller.shadow){
+    if(controller.base.shadow){
       p.blend(shadowBlend, 0, 0, mapSize, mapSize, offsetX, offsetY, mapSize, mapSize, p.MULTIPLY);      
     }
   }
@@ -63,7 +55,7 @@ const sketch = (p) => {
       for (var y = 0; y < mapSize; y+=sc) {
 
         p.noiseDetail(16,0.5);
-        var height = p.noise( (freq * (x-(controller.xSymmetry * mapSize/2))) , (freq * (y-(controller.ySymmetry * mapSize/2))) );
+        var height = p.noise( (freq * (x-(controller.base.xSymmetry * mapSize/2))) , (freq * (y-(controller.base.ySymmetry * mapSize/2))) );
 
         p.noiseDetail(6,0.55);
         var moisture = p.noise((freq * x)+1000, (freq * y)+1000);
@@ -71,8 +63,8 @@ const sketch = (p) => {
         var val = radialGradient(x,y,mapSize,mapSize);
         height = height * val;
         
-        if(controller.heightFac<1 || height>0.10) height *= controller.heightFac;
-        moisture *= controller.moistureFac;
+        if(controller.base.heightFac<1 || height>0.10) height *= controller.base.heightFac;
+        moisture *= controller.base.moistureFac;
         
         var zone = makeBiome(height,moisture);     
         genMapArray[x][y] = zone;
