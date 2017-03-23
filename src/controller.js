@@ -3,7 +3,7 @@ class Controller {
     this.p = p;
     this.generateMap = generateMap;
     this.base = {
-      seed        : this.p.floor(this.p.random(4095)),
+      seed        : "Yaban :D",
       xSymmetry   : false,
       ySymmetry   : false,
       heightFac   : 1.0,
@@ -11,6 +11,7 @@ class Controller {
       shadow      : true,
     }
 
+    this.convertSeed();
     this.createController();
   }
 
@@ -29,7 +30,7 @@ class Controller {
     var seedButton = this.p.createButton("Generate");
     seedButton.parent(controllerDiv);
     seedButton.mousePressed(() => {
-      this.p.noiseSeed(this.base.seed);
+      this.convertSeed();
       this.generateMap();
     });
 
@@ -50,6 +51,21 @@ class Controller {
     var shadowCbox = this.p.createCheckbox('Shadow', this.base.shadow);
     shadowCbox.parent(controllerDiv);
     shadowCbox.changed(() => this.base.shadow = !this.base.shadow );
+  }
+
+  convertSeed(){
+    var realSeed = this.p.floor(this.p.random(10000));
+    
+    if(this.base.seed != ""){
+      var realSeedString = "";
+      for(var i=0;i<this.base.seed.length;i++){
+        var charCode = this.p.abs(this.base.seed.charCodeAt(i)-32);
+        realSeedString = realSeedString+charCode
+      }
+      realSeed = Number(realSeedString)%4294967296;
+    }
+    console.log("Real Seed : ",realSeed);
+    this.realSeed = realSeed;
   }
 
   createSliderWithLabel (target, info, min, max, step){

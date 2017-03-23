@@ -32,8 +32,6 @@ const sketch = (p) => {
     shadowBlend = p.createImage(mapSize, mapSize);
     controller = new Controller(p,generateMap);
 
-    controller.base.seed = 3678;
-    p.noiseSeed(controller.base.seed); 
     generateMap();
   }
 
@@ -50,6 +48,7 @@ const sketch = (p) => {
 
   function generateMap() {
     //map
+    p.noiseSeed(controller.realSeed);
     for (var x = 0; x < mapSize; x+=sc) {
       genMapArray[x] = [];
       for (var y = 0; y < mapSize; y+=sc) {
