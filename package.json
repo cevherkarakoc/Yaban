@@ -1,6 +1,6 @@
 {
   "name": "yaban",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Procedural island generation",
   "main": "index.js",
   "scripts": {

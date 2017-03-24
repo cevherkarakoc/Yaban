@@ -32729,47 +32729,129 @@ module.exports = {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-var createController = function createController(p, controller, buttonAction) {
-  var controllerDiv = p.createDiv("");
-  controllerDiv.class("controller");
 
-  var infoP = p.createP("If you want random seed, leave it blank");
-  infoP.parent(controllerDiv);
-  infoP.style("font-size", "14px");
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-  var seedInput = p.createInput(controller.seed);
-  seedInput.parent(controllerDiv);
-  seedInput.input(function () {
-    return controller.seed = seedInput.value();
-  });
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-  var seedButton = p.createButton("Generate");
-  seedButton.parent(controllerDiv);
-  seedButton.mousePressed(function () {
-    p.noiseSeed(controller.seed);
-    buttonAction();
-  });
+var Controller = function () {
+  function Controller(p, generateMap) {
+    _classCallCheck(this, Controller);
 
-  var xSymmetryCbox = p.createCheckbox('X Symmetry', controller.xSymmetry);
-  xSymmetryCbox.parent(controllerDiv);
-  xSymmetryCbox.changed(function () {
-    return controller.xSymmetry = !controller.xSymmetry;
-  });
+    this.p = p;
+    this.generateMap = generateMap;
+    this.base = {
+      seed: "Yaban :D",
+      xSymmetry: false,
+      ySymmetry: false,
+      heightFac: 1.0,
+      moistureFac: 1.0,
+      shadow: true
+    };
 
-  var ySymmetryCbox = p.createCheckbox('Y Symmetry', controller.ySymmetry);
-  ySymmetryCbox.parent(controllerDiv);
-  ySymmetryCbox.changed(function () {
-    return controller.ySymmetry = !controller.ySymmetry;
-  });
+    this.convertSeed();
+    this.createController();
+  }
 
-  var shadowCbox = p.createCheckbox('Shadow', controller.shadow);
-  shadowCbox.parent(controllerDiv);
-  shadowCbox.changed(function () {
-    return controller.shadow = !controller.shadow;
-  });
-};
+  _createClass(Controller, [{
+    key: "createController",
+    value: function createController() {
+      var _this = this;
 
-exports.default = createController;
+      var controllerDiv = this.p.createDiv("");
+      controllerDiv.class("controller");
+
+      var infoP = this.p.createP("If you want random seed, leave it blank");
+      infoP.parent(controllerDiv);
+      infoP.style("font-size", "14px");
+
+      var seedInput = this.p.createInput(this.base.seed);
+      seedInput.parent(controllerDiv);
+      seedInput.input(function () {
+        return _this.base.seed = seedInput.value();
+      });
+
+      var seedButton = this.p.createButton("Generate");
+      seedButton.parent(controllerDiv);
+      seedButton.mousePressed(function () {
+        _this.convertSeed();
+        _this.generateMap();
+      });
+
+      var xSymmetryCbox = this.p.createCheckbox('X Symmetry', this.base.xSymmetry);
+      xSymmetryCbox.parent(controllerDiv);
+      xSymmetryCbox.changed(function () {
+        return _this.base.xSymmetry = !_this.base.xSymmetry;
+      });
+
+      var ySymmetryCbox = this.p.createCheckbox('Y Symmetry', this.base.ySymmetry);
+      ySymmetryCbox.parent(controllerDiv);
+      ySymmetryCbox.changed(function () {
+        return _this.base.ySymmetry = !_this.base.ySymmetry;
+      });
+
+      var heightSlider = this.createSliderWithLabel("heightFac", "Height Factor : ", 0.1, 5, 0.01);
+      heightSlider.parent(controllerDiv);
+
+      var moistureSlider = this.createSliderWithLabel("moistureFac", "Moisture Factor : ", 0.1, 5, 0.01);
+      moistureSlider.parent(controllerDiv);
+
+      var shadowCbox = this.p.createCheckbox('Shadow', this.base.shadow);
+      shadowCbox.parent(controllerDiv);
+      shadowCbox.changed(function () {
+        return _this.base.shadow = !_this.base.shadow;
+      });
+    }
+  }, {
+    key: "convertSeed",
+    value: function convertSeed() {
+      var realSeed = this.p.floor(this.p.random(10000));
+
+      if (this.base.seed != "") {
+        var realSeedString = "";
+        for (var i = 0; i < this.base.seed.length; i++) {
+          var charCode = this.p.abs(this.base.seed.charCodeAt(i) - 32);
+          realSeedString = realSeedString + charCode;
+        }
+        realSeed = Number(realSeedString) % 4294967296;
+      }
+      console.log("Real Seed : ", realSeed);
+      this.realSeed = realSeed;
+    }
+  }, {
+    key: "createSliderWithLabel",
+    value: function createSliderWithLabel(target, info, min, max, step) {
+      var _this2 = this;
+
+      var sliderDiv = this.p.createDiv("");
+
+      var infoSpan;
+      var resultSpan;
+      var slider;
+
+      infoSpan = this.p.createSpan(info);
+      infoSpan.parent(sliderDiv);
+
+      slider = this.p.createSlider(min, max, this.base[target], step);
+      slider.parent(sliderDiv);
+      slider.input(function () {
+        _this2.base[target] = slider.value();
+        resultSpan.html(_this2.base[target]);
+      });
+
+      resultSpan = this.p.createSpan(this.base[target]);
+      resultSpan.parent(sliderDiv);
+      resultSpan.style("font-size", "14px");
+      resultSpan.style("margin-left", "11px");
+
+      return sliderDiv;
+    }
+  }]);
+
+  return Controller;
+}();
+
+exports.default = Controller;
 
 /***/ }),
 /* 3 */
@@ -35496,49 +35578,42 @@ var sketch = function sketch(p) {
   var mapSize;
   var shadowBlend;
 
-  var controller = {
-    seed: p.floor(p.random(4095)),
-    xSymmetry: false,
-    ySymmetry: false,
-    shadow: true
-  };
+  var controller;
 
   p.setup = function () {
-    p.createCanvas(600, 600);-p.noStroke();
+    p.createCanvas(600, 600);
+    p.noStroke();
     p.colorMode(p.HSB);
-
-    p.noiseSeed(3678);
-
-    p.noiseDetail(16, 0.5);
 
     mapSize = p.width;
     genMapArray = [];
     genMap = p.createImage(mapSize, mapSize);
     shadowBlend = p.createImage(mapSize, mapSize);
+    controller = new _controller2.default(p, generateMap);
 
     generateMap();
-
-    (0, _controller2.default)(p, controller, generateMap);
   };
 
   p.draw = function () {
     offsetX += deltaX * 3;
     offsetY += deltaY * 3;
+
     p.image(genMap, offsetX, offsetY);
     //p.image(shadowBlend,offsetX,offsetY);
-    if (controller.shadow) {
+    if (controller.base.shadow) {
       p.blend(shadowBlend, 0, 0, mapSize, mapSize, offsetX, offsetY, mapSize, mapSize, p.MULTIPLY);
     }
   };
 
   function generateMap() {
     //map
+    p.noiseSeed(controller.realSeed);
     for (var x = 0; x < mapSize; x += sc) {
       genMapArray[x] = [];
       for (var y = 0; y < mapSize; y += sc) {
 
         p.noiseDetail(16, 0.5);
-        var height = p.noise(freq * (x - controller.xSymmetry * mapSize / 2), freq * (y - controller.ySymmetry * mapSize / 2));
+        var height = p.noise(freq * (x - controller.base.xSymmetry * mapSize / 2), freq * (y - controller.base.ySymmetry * mapSize / 2));
 
         p.noiseDetail(6, 0.55);
         var moisture = p.noise(freq * x + 1000, freq * y + 1000);
@@ -35546,8 +35621,10 @@ var sketch = function sketch(p) {
         var val = radialGradient(x, y, mapSize, mapSize);
         height = height * val;
 
-        var zone = (0, _makeBiome2.default)(height, moisture);
+        if (controller.base.heightFac < 1 || height > 0.10) height *= controller.base.heightFac;
+        moisture *= controller.base.moistureFac;
 
+        var zone = (0, _makeBiome2.default)(height, moisture);
         genMapArray[x][y] = zone;
 
         var c = zone.color;
@@ -35596,7 +35673,6 @@ var sketch = function sketch(p) {
   var radialGradient = function radialGradient(x, y, w, h) {
     var val = p.sqrt(p.pow(w / 2 - x, 2) + p.pow(h / 2 - y, 2));
     val = p.map(val, 0, w / 2, 1, 0);
-
     return val;
   };
 };
