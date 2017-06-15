@@ -4,25 +4,17 @@ const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const HtmlWebpackPluginConfig = new HtmlWebpackPlugin({
-  template: './template/index.html',
-  filename: 'index.html',
+  template: './template/test.html',
+  filename: './test/index.html',
   inject: 'body'
 });
 
-const UglifyPluginConfig = new webpack.optimize.UglifyJsPlugin({
-  compress: {
-    warnings: false,
-  },
-  output: {
-    comments: false,
-  },
-});
-
 module.exports = {
-  entry: './src/sketch.js',
+  entry: './test/index.js',
   output: {
-    filename: './build/bundle.js'
+    filename: 'test/theTest.js'
   },
+  
   devtool: 'source-map',
   module: {
     loaders: [
@@ -32,7 +24,6 @@ module.exports = {
 
 
   plugins: [
-    UglifyPluginConfig,
     HtmlWebpackPluginConfig
   ]
 };

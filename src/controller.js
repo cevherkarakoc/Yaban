@@ -12,7 +12,6 @@ class Controller {
     }
 
     this.convertSeed();
-    this.createController();
   }
 
   createController(){

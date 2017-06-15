@@ -31,6 +31,7 @@ const sketch = (p) => {
     genMap = p.createImage(mapSize, mapSize);
     shadowBlend = p.createImage(mapSize, mapSize);
     controller = new Controller(p,generateMap);
+    controller.createController();
 
     generateMap();
   }
